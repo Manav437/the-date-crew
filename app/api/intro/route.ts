@@ -96,7 +96,7 @@ export async function POST(request: Request): Promise<Response> {
     const match = getCompatibleMatches(customer).find((candidate) => candidate.id === matchId);
     if (!match) return json({ error: 'Suggested match not found.' }, 404);
 
-    const apiKey = process.env.OPENAI_API_KEY?.trim() || '';
+    const apiKey = process.env.GROQ_API_KEY?.trim() || '';
     if (apiKey) {
         const retryAfter = reserveGeneration(matchmaker.email);
         if (retryAfter)

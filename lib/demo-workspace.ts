@@ -17,7 +17,7 @@ export type SentMatch = {
     name: string;
     createdAt: string;
     intro: string;
-    source: 'template' | 'openai';
+    source: 'template' | 'openai' | 'groq';
 };
 export type Activity = { status?: JourneyStatus; notes: Note[]; sentMatches: SentMatch[] };
 type Workspace = Record<string, Activity>;
@@ -54,25 +54,25 @@ function parse(raw: string): Workspace {
                     : undefined,
                 notes: Array.isArray(record.notes)
                     ? record.notes.filter(
-                          (n) =>
-                              n &&
-                              typeof n.id === 'string' &&
-                              typeof n.text === 'string' &&
-                              typeof n.author === 'string' &&
-                              typeof n.createdAt === 'string',
-                      )
+                        (n) =>
+                            n &&
+                            typeof n.id === 'string' &&
+                            typeof n.text === 'string' &&
+                            typeof n.author === 'string' &&
+                            typeof n.createdAt === 'string',
+                    )
                     : [],
                 sentMatches: Array.isArray(record.sentMatches)
                     ? record.sentMatches.filter(
-                          (m) =>
-                              m &&
-                              typeof m.id === 'string' &&
-                              typeof m.matchId === 'string' &&
-                              typeof m.name === 'string' &&
-                              typeof m.createdAt === 'string' &&
-                              typeof m.intro === 'string' &&
-                              ['template', 'openai'].includes(m.source),
-                      )
+                        (m) =>
+                            m &&
+                            typeof m.id === 'string' &&
+                            typeof m.matchId === 'string' &&
+                            typeof m.name === 'string' &&
+                            typeof m.createdAt === 'string' &&
+                            typeof m.intro === 'string' &&
+                            ['template', 'openai', 'groq'].includes(m.source),
+                    )
                     : [],
             };
         }

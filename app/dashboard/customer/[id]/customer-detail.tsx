@@ -11,7 +11,7 @@ type SuggestedMatch = CompatibleMatch & { introDraft: string };
 type Preview = {
     match: SuggestedMatch;
     intro: string;
-    source: 'template' | 'openai';
+    source: 'template' | 'groq';
     notice: string;
 };
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -128,10 +128,12 @@ export default function CustomerDetail({
                         ? 'Too many AI requests. Please wait a minute and try again.'
                         : response.status === 401
                             ? 'Your session expired. Log in again to generate an intro.'
-                            : 'Could not generate an intro. The rule-based draft is still available.',
+                            : response.status === 403
+                                ? 'Request origin does not match APP_ORIGIN. Use localhost in local settings and your hosted URL in deployment settings.'
+                                : 'Could not generate an intro. The rule-based draft is still available.',
                 );
             const result = await response.json();
-            if (typeof result.intro !== 'string' || !['template', 'openai'].includes(result.source))
+            if (typeof result.intro !== 'string' || !['template', 'groq'].includes(result.source))
                 throw new Error('Unexpected AI response. Please use the rule-based draft.');
             if (!controller.signal.aborted)
                 setPreview((current) =>
@@ -420,7 +422,7 @@ export default function CustomerDetail({
                             >
                                 <summary className="cursor-pointer text-sm">
                                     {sent.name} ·{' '}
-                                    {sent.source === 'openai' ? 'AI-assisted' : 'Rule-based'} draft{' '}
+                                    {sent.source === 'template' ? 'Rule-based' : 'AI-assisted'} draft{' '}
                                     <span className="block text-xs text-white/40 mt-1">
                                         {dateTime(sent.createdAt)} · No email sent
                                     </span>
@@ -506,8 +508,8 @@ export default function CustomerDetail({
                         />
                         <p className="text-xs text-white/40 mt-3">
                             {aiEnabled
-                                ? 'AI generation sends a minimal fictional profile summary to OpenAI. It may incur API charges. Contact details, income, religion, and caste are excluded.'
-                                : 'Set OPENAI_API_KEY on the server to enable real AI generation. No API request is made in template mode.'}
+                                ? 'AI generation sends a minimal fictional profile summary to Groq. Free-tier limits or API charges may apply. Contact details, income, religion, and caste are excluded.'
+                                : 'Set GROQ_API_KEY on the server to enable real AI generation. No API request is made in template mode.'}
                         </p>
                         {storageError && (
                             <p

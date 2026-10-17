@@ -31,7 +31,7 @@ This public demo account is intentional for assignment reviewers. It is **not pr
 | 100+ opposite-gender profiles | Separate deterministic pool of 240 synthetic profiles: 120 women and 120 men |
 | Gender-specific matching | Strict four-condition male eligibility; female scoring for profession, values, children, relocation and lifestyle |
 | Explainable scores | Deterministic top-five scoring with factual explanations and stable tie-breaking |
-| AI-assisted experience | Server-side OpenAI intro generation, editable before mock send; honest rule-based fallback when unavailable |
+| AI-assisted experience | Server-side Groq intro generation, editable before mock send; honest rule-based fallback when unavailable |
 | Send Match | Accessible preview dialog, recipient and match details, editable draft, mock-send confirmation and local history |
 | Meeting/call notes | Timestamped notes by customer, persisted in this browser |
 | Journey tracking | Editable status, reflected in dashboard filters; mock sends record “Introduction Sent” |
@@ -43,14 +43,14 @@ Set these **server-only** environment variables:
 
 ```dotenv
 AUTH_SECRET=<random-secret-of-at-least-32-bytes>
-OPENAI_API_KEY=<your-key>
-OPENAI_MODEL=gpt-4.1-mini
+GROQ_API_KEY=<your-groq-key>
+GROQ_MODEL=openai/gpt-oss-20b
 APP_ORIGIN=https://your-deployment.example
 ```
 
-`OPENAI_API_KEY` is optional for running the template-only demo, but **configure it and verify a real generated introduction before submitting the mandatory AI requirement**. Without it, the UI labels drafts as rule-based and disables AI generation; it does not pretend templates are AI. With it, select a suggested match, click **Generate AI intro**, review/edit the result, and confirm the mock send. Provider failures fall back to the template with an explanatory notice.
+`GROQ_API_KEY` is optional for running the template-only demo, but **configure it and verify a real generated introduction before submitting the mandatory AI requirement**. Without it, the UI labels drafts as rule-based and disables AI generation; it does not pretend templates are AI. With it, select a suggested match, click **Generate AI intro**, review/edit the result, and confirm the mock send. Provider failures fall back to the template with an explanatory notice.
 
-The app calls the OpenAI Responses API with `store: false`, a 15-second timeout, and bounded output. Only fictional first names, age, city, profession, and safe alignment facts are sent. Contacts, DOB, income, company, religion, caste and staff identity are excluded. Requests incur provider costs and remain subject to the provider’s data-handling policies; `store: false` is not a promise of zero provider retention. Review generated drafts before recording a mock send.
+The app calls Groq’s OpenAI-compatible Responses API using `openai/gpt-oss-20b` by default, with a 15-second timeout and bounded output. The `openai/` prefix is part of the model ID hosted by Groq; requests go to Groq, not OpenAI. Only fictional first names, age, city, profession, and safe alignment facts are sent. Contacts, DOB, income, company, religion, caste and staff identity are excluded. Free-tier model availability and request/token limits depend on the Groq project; paid usage may incur charges. Requests remain subject to Groq’s data-handling policies. Review generated drafts before recording a mock send.
 
 The endpoint verifies the session, client assignment, request origin, and server-computed suggested match. AI attempts are limited to five per minute per demo account **per process**. This is not a distributed production limiter; set provider budget limits too. Set `APP_ORIGIN` to the exact public origin, without a path or trailing slash, especially behind an HTTPS-terminating reverse proxy. Never use `NEXT_PUBLIC_` for keys or signing secrets.
 
@@ -72,7 +72,7 @@ The matching pool is static JSON in `data/match-pool.json`; no generation script
 
 **Matching logic.** A reproducible pool contains 120 fictional profiles per gender. For male customers, candidates must satisfy all four explicit brief requirements: younger, lower annual income, shorter height, and matching views on children. Eligible matches receive a base score refined by shared family values, relocation feasibility, and lifestyle. Female-client scores use stated profession, family values, children, relocation feasibility and lifestyle, without assuming employer prestige equals compatibility. Only verified opposite-gender profiles are considered, scores are bounded to 100, and the top five are explained using recorded facts. Gender-specific rules are implemented to satisfy the exercise, not proposed as universal relationship preferences; production matching should use each person’s explicit preferences and consent. Caste, religion and mother tongue are displayed as biodata but are not ranking signals.
 
-**AI and assumptions.** OpenAI optionally turns minimized fictional profile information into a concise personalized introduction for human review; it neither chooses recipients nor sends email. Rule-based drafts remain available if the key is missing, the service fails, or the rate limit is reached, and the UI distinguishes them from real AI output. “Verified” is fixture metadata, not a real identity check. The shared reviewer account, opposite-gender pool, fixed fixture date, browser-local persistence, and mock email actions are explicit MVP assumptions. A production version needs private persistent data, real staff accounts, server-side notes/history, consent-aware sharing, audit trails, distributed rate limits, and provider-budget controls.
+**AI and assumptions.** Groq optionally turns minimized fictional profile information into a concise personalized introduction for human review; it neither chooses recipients nor sends email. Rule-based drafts remain available if the key is missing, the service fails, or the rate limit is reached, and the UI distinguishes them from real AI output. “Verified” is fixture metadata, not a real identity check. The shared reviewer account, opposite-gender pool, fixed fixture date, browser-local persistence, and mock email actions are explicit MVP assumptions. A production version needs private persistent data, real staff accounts, server-side notes/history, consent-aware sharing, audit trails, distributed rate limits, and provider-budget controls.
 
 ## Research informing the additional fields
 
@@ -90,11 +90,11 @@ These references informed field selection, not validated predictive accuracy. A 
 
 1. Push this project to your GitHub repository; do not commit `.env.local`.
 2. Import the repository into Vercel (Node runtime; no static export).
-3. Configure `AUTH_SECRET`, `OPENAI_API_KEY`, `OPENAI_MODEL`, and the final HTTPS `APP_ORIGIN`; redeploy after setting the final origin.
+3. Configure `AUTH_SECRET`, `GROQ_API_KEY`, optional `GROQ_MODEL`, and the final HTTPS `APP_ORIGIN`; redeploy after setting the final origin. Use `http://localhost:3000` for local `APP_ORIGIN`, not the deployed URL.
 4. Check login, a real AI-generated intro, notes after reload, mock sends, and logout on the hosted site.
 5. Supply the **live hosted URL**, **GitHub repo URL**, sample credentials above, and the three-paragraph write-up. Neither URL is fabricated in this repository.
 6. Submit to the assignment email using its required subject line with your own name.
 
 ### Known demo limitations
 
-Browser storage is per browser/device, can be edited or cleared by the user, and is shared between tabs of this demo account. It is not a secure/shared operational record and should never hold real customer information. Logout ends the cookie session but does not erase synthetic local demo history. No real emails, signup accounts, identity checks, production data ingestion, or deployment have been implemented. The only external service is optional OpenAI intro generation. Synthetic fixture data is not confidential; replace it and the demo auth design before using this with real customers.
+Browser storage is per browser/device, can be edited or cleared by the user, and is shared between tabs of this demo account. It is not a secure/shared operational record and should never hold real customer information. Logout ends the cookie session but does not erase synthetic local demo history. No real emails, signup accounts, identity checks, production data ingestion, or deployment have been implemented. The only external service is optional Groq intro generation. Synthetic fixture data is not confidential; replace it and the demo auth design before using this with real customers.

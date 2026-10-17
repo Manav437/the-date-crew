@@ -20,7 +20,7 @@ async function CustomerProfile({ params }: PageProps<'/dashboard/customer/[id]'>
             customer={customer}
             matches={matches}
             poolCount={matchPool.filter((p) => p.gender !== customer.gender).length}
-            aiEnabled={Boolean(process.env.OPENAI_API_KEY?.trim())}
+            aiEnabled={Boolean(process.env.GROQ_API_KEY?.trim())}
         />
     );
 }
